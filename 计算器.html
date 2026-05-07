@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>计算器</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+  }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #1a1a2e;
+    font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  }
+  .calculator {
+    background: #2d2d44;
+    border-radius: 16px;
+    padding: 24px;
+    width: 340px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .title-bar span {
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .window-btns {
+    display: flex;
+    gap: 8px;
+  }
+  .window-btns i {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: block;
+  }
+  .window-btns .close { background: #ff5f57; }
+  .window-btns .min { background: #febc2e; }
+  .window-btns .max { background: #28c840; }
+  .display {
+    background: #1e1e32;
+    border-radius: 12px;
+    padding: 20px 16px;
+    margin-bottom: 16px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .display .expr {
+    color: rgba(255,255,255,0.4);
+    font-size: 16px;
+    min-height: 24px;
+    word-break: break-all;
+    text-align: right;
+    width: 100%;
+  }
+  .display .result {
+    color: #fff;
+    font-size: 40px;
+    font-weight: 300;
+    word-break: break-all;
+    text-align: right;
+    width: 100%;
+    transition: font-size 0.1s;
+  }
+  .display .result.small {
+    font-size: 28px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .grid button {
+    padding: 16px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 20px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+  .grid button:active {
+    transform: scale(0.95);
+  }
+  .grid button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.1s;
+  }
+  .grid button:active::after {
+    background: rgba(255,255,255,0.1);
+  }
+  .num {
+    background: #3a3a55;
+    color: #e8e8f0;
+  }
+  .num:hover {
+    background: #454566;
+  }
+  .op {
+    background: #4a4a6a;
+    color: #9b9bff;
+  }
+  .op:hover {
+    background: #55557a;
+  }
+  .func {
+    background: #2d2d50;
+    color: rgba(255,255,255,0.5);
+  }
+  .func:hover {
+    background: #383860;
+  }
+  .eq {
+    background: #6c63ff;
+    color: #fff;
+  }
+  .eq:hover {
+    background: #7c75ff;
+  }
+  .span-2 {
+    grid-column: span 2;
+  }
+  .history {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .history.open {
+    max-height: 200px;
+    margin-bottom: 12px;
+  }
+  .history-inner {
+    background: #1e1e32;
+    border-radius: 10px;
+    padding: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .history-inner::-webkit-scrollbar {
+    width: 4px;
+  }
+  .history-inner::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .history-inner::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+  }
+  .history-item {
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    padding: 6px 10px;
+    text-align: right;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .history-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+  .history-item .h-expr {
+    color: rgba(255,255,255,0.35);
+    font-size: 12px;
+  }
+  .history-item .h-result {
+    color: rgba(255,255,255,0.7);
+    font-size: 18px;
+    font-weight: 300;
+  }
+  .history-toggle {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+    transition: color 0.2s;
+    font-family: inherit;
+  }
+  .history-toggle:hover {
+    color: rgba(255,255,255,0.6);
+  }
+  .error-state {
+    color: #ff6b6b !important;
+  }
+</style>
+</head>
+<body>
+<div class="calculator">
+  <div class="title-bar">
+    <span>计算器</span>
+    <div class="window-btns">
+      <i class="close"></i>
+      <i class="min"></i>
+      <i class="max"></i>
+    </div>
+  </div>
+
+  <div class="display">
+    <div class="expr" id="expr"></div>
+    <div class="result" id="result">0</div>
+  </div>
+
+  <div class="history" id="historyPanel">
+    <div class="history-inner" id="historyList"></div>
+  </div>
+
+  <div class="grid">
+    <button class="func" data-action="clear">AC</button>
+    <button class="func" data-action="toggle-sign">±</button>
+    <button class="func" data-action="percent">%</button>
+    <button class="op" data-action="divide">÷</button>
+
+    <button class="num" data-value="7">7</button>
+    <button class="num" data-value="8">8</button>
+    <button class="num" data-value="9">9</button>
+    <button class="op" data-action="multiply">×</button>
+
+    <button class="num" data-value="4">4</button>
+    <button class="num" data-value="5">5</button>
+    <button class="num" data-value="6">6</button>
+    <button class="op" data-action="subtract">−</button>
+
+    <button class="num" data-value="1">1</button>
+    <button class="num" data-value="2">2</button>
+    <button class="num" data-value="3">3</button>
+    <button class="op" data-action="add">+</button>
+
+    <button class="num span-2" data-value="0">0</button>
+    <button class="num" data-value=".">.</button>
+    <button class="eq" data-action="calculate">=</button>
+  </div>
+
+  <div style="text-align:center;">
+    <button class="history-toggle" id="historyToggle">📋 历史记录</button>
+  </div>
+</div>
+
+<script>
+const OP_SYMBOLS = { add: '+', subtract: '−', multiply: '×', divide: '÷' };
+const KEY_TO_OP = { '+': 'add', '-': 'subtract', '*': 'multiply', '/': 'divide' };
+const INPUT_KEYS = ['0','1','2','3','4','5','6','7','8','9','.'];
+const STORAGE_KEY = 'calcHistory';
+
+const state = {
+  currentInput: '0',
+  previousInput: '',
+  operator: null,
+  shouldResetInput: false,
+  expression: '',
+  history: JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'),
+  historyOpen: false,
+};
+
+const resultEl = document.getElementById('result');
+const exprEl = document.getElementById('expr');
+const historyList = document.getElementById('historyList');
+const historyPanel = document.getElementById('historyPanel');
+
+let saveTimer;
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+  }, 200);
+}
+
+function updateDisplay() {
+  const display = state.currentInput;
+  resultEl.classList.toggle('small', display.length > 14);
+  resultEl.classList.toggle('error-state', display === '不能除以零');
+  resultEl.textContent = display || '0';
+  exprEl.textContent = state.expression;
+}
+
+function resetOperationState(resetInput = true) {
+  state.operator = null;
+  state.previousInput = '';
+  state.shouldResetInput = resetInput;
+}
+
+function appendValue(val) {
+  if (state.shouldResetInput) {
+    state.currentInput = val === '.' ? '0.' : val;
+    state.shouldResetInput = false;
+  } else {
+    if (val === '.' && state.currentInput.includes('.')) return;
+    if (state.currentInput === '0' && val !== '.') {
+      state.currentInput = val;
+    } else {
+      state.currentInput += val;
+    }
+  }
+  updateDisplay();
+}
+
+function chooseOperator(op) {
+  const current = parseFloat(state.currentInput);
+  if (isNaN(current)) return;
+
+  if (state.operator && !state.shouldResetInput) {
+    calculate();
+  }
+
+  state.operator = op;
+  state.previousInput = state.currentInput;
+  state.shouldResetInput = true;
+
+  state.expression = `${state.previousInput} ${OP_SYMBOLS[op] || op}`;
+  updateDisplay();
+}
+
+function calculate() {
+  const prev = parseFloat(state.previousInput);
+  const curr = parseFloat(state.currentInput);
+  if (isNaN(prev) || isNaN(curr)) return;
+
+  let result;
+  const exprStr = `${state.previousInput} ${OP_SYMBOLS[state.operator] || state.operator} ${state.currentInput}`;
+
+  switch (state.operator) {
+    case 'add': result = prev + curr; break;
+    case 'subtract': result = prev - curr; break;
+    case 'multiply': result = prev * curr; break;
+    case 'divide':
+      if (curr === 0) {
+        state.expression = exprStr;
+        state.currentInput = '不能除以零';
+        resetOperationState();
+        updateDisplay();
+        return;
+      }
+      result = prev / curr;
+      break;
+    default: return;
+  }
+
+  if (!Number.isInteger(result)) {
+    result = parseFloat(result.toFixed(10));
+  }
+
+  const resultStr = String(result);
+  state.history.unshift({ expr: exprStr, result: resultStr });
+  if (state.history.length > 20) state.history.pop();
+  scheduleSave();
+  if (state.historyOpen) renderHistory();
+
+  state.expression = exprStr;
+  state.currentInput = resultStr;
+  resetOperationState();
+  updateDisplay();
+}
+
+function clearAll() {
+  state.currentInput = '0';
+  state.expression = '';
+  resetOperationState(false);
+  updateDisplay();
+}
+
+function toggleSign() {
+  if (state.currentInput === '0') return;
+  if (state.currentInput.startsWith('-')) {
+    state.currentInput = state.currentInput.slice(1);
+  } else {
+    state.currentInput = '-' + state.currentInput;
+  }
+  updateDisplay();
+}
+
+function percent() {
+  const num = parseFloat(state.currentInput);
+  if (isNaN(num)) return;
+  state.currentInput = String(num / 100);
+  updateDisplay();
+}
+
+function renderHistory() {
+  historyList.innerHTML = '';
+  if (state.history.length === 0) {
+    historyList.innerHTML = '<div style="color:rgba(255,255,255,0.25);text-align:center;padding:12px;font-size:13px;">暂无记录</div>';
+    return;
+  }
+  state.history.forEach((entry) => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.dataset.result = entry.result;
+    div.innerHTML = `
+      <div class="h-expr">${entry.expr}</div>
+      <div class="h-result">= ${entry.result}</div>
+    `;
+    historyList.appendChild(div);
+  });
+}
+
+historyList.addEventListener('click', (e) => {
+  const item = e.target.closest('.history-item');
+  if (!item) return;
+  state.currentInput = item.dataset.result;
+  state.expression = '';
+  resetOperationState();
+  updateDisplay();
+});
+
+document.getElementById('historyToggle').addEventListener('click', () => {
+  state.historyOpen = !state.historyOpen;
+  historyPanel.classList.toggle('open', state.historyOpen);
+});
+
+document.querySelector('.grid').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  const action = btn.dataset.action;
+  const value = btn.dataset.value;
+
+  if (state.currentInput === '不能除以零' && action !== 'clear') return;
+
+  if (value !== undefined) {
+    appendValue(value);
+  } else if (action === 'clear') {
+    clearAll();
+  } else if (action === 'toggle-sign') {
+    toggleSign();
+  } else if (action === 'percent') {
+    percent();
+  } else if (action === 'calculate') {
+    if (state.operator) {
+      calculate();
+    }
+  } else if (['add', 'subtract', 'multiply', 'divide'].includes(action)) {
+    chooseOperator(action);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (INPUT_KEYS.includes(e.key)) {
+    appendValue(e.key);
+    e.preventDefault();
+  } else if (KEY_TO_OP[e.key]) {
+    chooseOperator(KEY_TO_OP[e.key]);
+    e.preventDefault();
+  } else if (e.key === 'Enter' || e.key === '=') {
+    if (state.operator) calculate();
+    e.preventDefault();
+  } else if (e.key === 'Escape') {
+    clearAll();
+    e.preventDefault();
+  } else if (e.key === 'Backspace') {
+    if (!state.shouldResetInput && state.currentInput.length > 1) {
+      state.currentInput = state.currentInput.slice(0, -1);
+      if (state.currentInput === '-') state.currentInput = '0';
+    } else {
+      state.currentInput = '0';
+    }
+    updateDisplay();
+    e.preventDefault();
+  } else if (e.key === '%') {
+    percent();
+    e.preventDefault();
+  }
+});
+
+renderHistory();
+updateDisplay();
+</script>
+</body>
+</html>
