@@ -5,6 +5,76 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>计算器</title>
 <style>
+  :root {
+    --bg: #1a1a2e;
+    --calc-bg: #2d2d44;
+    --calc-shadow: rgba(0,0,0,0.5);
+    --calc-border: rgba(255,255,255,0.08);
+    --display-bg: #1e1e32;
+    --expr-color: rgba(255,255,255,0.4);
+    --result-color: #fff;
+    --num-bg: #3a3a55;
+    --num-color: #e8e8f0;
+    --num-hover: #454566;
+    --op-bg: #4a4a6a;
+    --op-color: #9b9bff;
+    --op-hover: #55557a;
+    --func-bg: #2d2d50;
+    --func-color: rgba(255,255,255,0.5);
+    --func-hover: #383860;
+    --eq-bg: #6c63ff;
+    --eq-color: #fff;
+    --eq-hover: #7c75ff;
+    --title-color: rgba(255,255,255,0.5);
+    --title-border: rgba(255,255,255,0.06);
+    --history-bg: #1e1e32;
+    --history-item-color: rgba(255,255,255,0.5);
+    --history-item-hover: rgba(255,255,255,0.05);
+    --history-expr-color: rgba(255,255,255,0.35);
+    --history-result-color: rgba(255,255,255,0.7);
+    --toggle-color: rgba(255,255,255,0.3);
+    --toggle-hover: rgba(255,255,255,0.6);
+    --scrollbar-thumb: rgba(255,255,255,0.15);
+    --ripple: rgba(255,255,255,0.1);
+    --empty-color: rgba(255,255,255,0.25);
+    --eq-shadow: rgba(108,99,255,0.35);
+  }
+
+  :root.light {
+    --bg: #e8e8f0;
+    --calc-bg: #ffffff;
+    --calc-shadow: rgba(0,0,0,0.12);
+    --calc-border: rgba(255,255,255,0.08);
+    --display-bg: #f4f4fa;
+    --expr-color: rgba(0,0,0,0.35);
+    --result-color: #1a1a2e;
+    --num-bg: #ecedf5;
+    --num-color: #2d2d44;
+    --num-hover: #e0e1ee;
+    --op-bg: #ddddf0;
+    --op-color: #6c63ff;
+    --op-hover: #d0d0e8;
+    --func-bg: #f0f0f5;
+    --func-color: rgba(0,0,0,0.4);
+    --func-hover: #e4e4ed;
+    --eq-bg: #6c63ff;
+    --eq-color: #fff;
+    --eq-hover: #7c75ff;
+    --title-color: rgba(0,0,0,0.35);
+    --title-border: rgba(0,0,0,0.06);
+    --history-bg: #f4f4fa;
+    --history-item-color: rgba(0,0,0,0.4);
+    --history-item-hover: rgba(0,0,0,0.04);
+    --history-expr-color: rgba(0,0,0,0.3);
+    --history-result-color: rgba(0,0,0,0.6);
+    --toggle-color: rgba(0,0,0,0.25);
+    --toggle-hover: rgba(0,0,0,0.5);
+    --scrollbar-thumb: rgba(0,0,0,0.12);
+    --ripple: rgba(0,0,0,0.06);
+    --empty-color: rgba(0,0,0,0.2);
+    --eq-shadow: rgba(108,99,255,0.25);
+  }
+
   * {
     margin: 0;
     padding: 0;
@@ -16,15 +86,17 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #1a1a2e;
+    background: var(--bg);
     font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    transition: background 0.3s;
   }
   .calculator {
-    background: #2d2d44;
+    background: var(--calc-bg);
     border-radius: 16px;
     padding: 24px;
     width: 340px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+    box-shadow: 0 20px 60px var(--calc-shadow), inset 0 1px 0 var(--calc-border);
+    transition: background 0.3s, box-shadow 0.3s;
   }
   .title-bar {
     display: flex;
@@ -32,12 +104,34 @@
     align-items: center;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--title-border);
   }
-  .title-bar span {
-    color: rgba(255,255,255,0.5);
+  .title-bar .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .title-bar .left span {
+    color: var(--title-color);
     font-size: 13px;
     letter-spacing: 0.5px;
+    transition: color 0.3s;
+  }
+  .theme-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: var(--title-color);
+    transition: color 0.3s, background 0.2s;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .theme-btn:hover {
+    background: var(--history-item-hover);
+    color: var(--toggle-hover);
   }
   .window-btns {
     display: flex;
@@ -52,52 +146,60 @@
   .window-btns .min { background: #febc2e; }
   .window-btns .max { background: #28c840; }
   .display {
-    background: #1e1e32;
+    background: var(--display-bg);
     border-radius: 12px;
     padding: 20px 16px;
     margin-bottom: 16px;
-    min-height: 100px;
+    height: 100px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
     overflow: hidden;
+    transition: background 0.3s;
   }
   .display .expr {
-    color: rgba(255,255,255,0.4);
+    color: var(--expr-color);
     font-size: 16px;
     min-height: 24px;
     word-break: break-all;
     text-align: right;
     width: 100%;
+    transition: color 0.3s;
   }
   .display .result {
-    color: #fff;
-    font-size: 40px;
+    color: var(--result-color);
+    font-size: 34px;
+    line-height: 1;
     font-weight: 300;
-    word-break: break-all;
     text-align: right;
     width: 100%;
-    transition: font-size 0.1s;
-  }
-  .display .result.small {
-    font-size: 28px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: font-size 0.1s, color 0.3s;
   }
   .grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 14px;
   }
   .grid button {
-    padding: 16px 0;
     border: none;
-    border-radius: 10px;
-    font-size: 20px;
+    border-radius: 50%;
+    font-size: 26px;
+    font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.1s;
     position: relative;
     overflow: hidden;
+    aspect-ratio: 1;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  }
+  .grid .span-2 {
+    border-radius: 24px;
+    aspect-ratio: auto;
+    padding: 16px 0;
   }
   .grid button:active {
     transform: scale(0.95);
@@ -110,35 +212,40 @@
     transition: background 0.1s;
   }
   .grid button:active::after {
-    background: rgba(255,255,255,0.1);
+    background: var(--ripple);
   }
   .num {
-    background: #3a3a55;
-    color: #e8e8f0;
+    background: var(--num-bg);
+    color: var(--num-color);
+    transition: background 0.3s, color 0.3s;
   }
   .num:hover {
-    background: #454566;
+    background: var(--num-hover);
   }
   .op {
-    background: #4a4a6a;
-    color: #9b9bff;
+    background: var(--op-bg);
+    color: var(--op-color);
+    transition: background 0.3s, color 0.3s;
   }
   .op:hover {
-    background: #55557a;
+    background: var(--op-hover);
   }
   .func {
-    background: #2d2d50;
-    color: rgba(255,255,255,0.5);
+    background: var(--func-bg);
+    color: var(--func-color);
+    transition: background 0.3s, color 0.3s;
   }
   .func:hover {
-    background: #383860;
+    background: var(--func-hover);
   }
   .eq {
-    background: #6c63ff;
-    color: #fff;
+    background: var(--eq-bg);
+    color: var(--eq-color);
+    box-shadow: 0 4px 14px var(--eq-shadow);
+    transition: background 0.3s;
   }
   .eq:hover {
-    background: #7c75ff;
+    background: var(--eq-hover);
   }
   .span-2 {
     grid-column: span 2;
@@ -153,11 +260,12 @@
     margin-bottom: 12px;
   }
   .history-inner {
-    background: #1e1e32;
+    background: var(--history-bg);
     border-radius: 10px;
     padding: 8px;
     max-height: 180px;
     overflow-y: auto;
+    transition: background 0.3s;
   }
   .history-inner::-webkit-scrollbar {
     width: 4px;
@@ -166,34 +274,36 @@
     background: transparent;
   }
   .history-inner::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.15);
+    background: var(--scrollbar-thumb);
     border-radius: 2px;
   }
   .history-item {
-    color: rgba(255,255,255,0.5);
+    color: var(--history-item-color);
     font-size: 13px;
     padding: 6px 10px;
     text-align: right;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, color 0.3s;
   }
   .history-item:hover {
-    background: rgba(255,255,255,0.05);
+    background: var(--history-item-hover);
   }
   .history-item .h-expr {
-    color: rgba(255,255,255,0.35);
+    color: var(--history-expr-color);
     font-size: 12px;
+    transition: color 0.3s;
   }
   .history-item .h-result {
-    color: rgba(255,255,255,0.7);
+    color: var(--history-result-color);
     font-size: 18px;
     font-weight: 300;
+    transition: color 0.3s;
   }
   .history-toggle {
     background: none;
     border: none;
-    color: rgba(255,255,255,0.3);
+    color: var(--toggle-color);
     font-size: 12px;
     cursor: pointer;
     padding: 4px 8px;
@@ -203,17 +313,27 @@
     font-family: inherit;
   }
   .history-toggle:hover {
-    color: rgba(255,255,255,0.6);
+    color: var(--toggle-hover);
   }
   .error-state {
     color: #ff6b6b !important;
+  }
+  .empty-history {
+    color: var(--empty-color);
+    text-align: center;
+    padding: 12px;
+    font-size: 13px;
+    transition: color 0.3s;
   }
 </style>
 </head>
 <body>
 <div class="calculator">
   <div class="title-bar">
-    <span>计算器</span>
+    <div class="left">
+      <span>计算器</span>
+      <button class="theme-btn" id="themeToggle" title="切换主题">🌙</button>
+    </div>
     <div class="window-btns">
       <i class="close"></i>
       <i class="min"></i>
@@ -267,13 +387,21 @@ const KEY_TO_OP = { '+': 'add', '-': 'subtract', '*': 'multiply', '/': 'divide' 
 const INPUT_KEYS = ['0','1','2','3','4','5','6','7','8','9','.'];
 const STORAGE_KEY = 'calcHistory';
 
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
 const state = {
   currentInput: '0',
   previousInput: '',
   operator: null,
   shouldResetInput: false,
   expression: '',
-  history: JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'),
+  history: loadHistory(),
   historyOpen: false,
 };
 
@@ -287,13 +415,18 @@ let saveTimer;
 function scheduleSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+    } catch {}
   }, 200);
 }
 
 function updateDisplay() {
   const display = state.currentInput;
-  resultEl.classList.toggle('small', display.length > 14);
+  const len = display.length;
+  let size = 34;
+  if (len > 10) size = Math.max(16, 34 - (len - 10) * 3);
+  resultEl.style.fontSize = size + 'px';
   resultEl.classList.toggle('error-state', display === '不能除以零');
   resultEl.textContent = display || '0';
   exprEl.textContent = state.expression;
@@ -402,19 +535,26 @@ function percent() {
 }
 
 function renderHistory() {
-  historyList.innerHTML = '';
+  historyList.textContent = '';
   if (state.history.length === 0) {
-    historyList.innerHTML = '<div style="color:rgba(255,255,255,0.25);text-align:center;padding:12px;font-size:13px;">暂无记录</div>';
+    const empty = document.createElement('div');
+    empty.className = 'empty-history';
+    empty.textContent = '暂无记录';
+    historyList.appendChild(empty);
     return;
   }
   state.history.forEach((entry) => {
     const div = document.createElement('div');
     div.className = 'history-item';
     div.dataset.result = entry.result;
-    div.innerHTML = `
-      <div class="h-expr">${entry.expr}</div>
-      <div class="h-result">= ${entry.result}</div>
-    `;
+    const exprDiv = document.createElement('div');
+    exprDiv.className = 'h-expr';
+    exprDiv.textContent = entry.expr;
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'h-result';
+    resultDiv.textContent = '= ' + entry.result;
+    div.appendChild(exprDiv);
+    div.appendChild(resultDiv);
     historyList.appendChild(div);
   });
 }
@@ -432,6 +572,23 @@ document.getElementById('historyToggle').addEventListener('click', () => {
   state.historyOpen = !state.historyOpen;
   historyPanel.classList.toggle('open', state.historyOpen);
 });
+
+const themeToggle = document.getElementById('themeToggle');
+
+function setTheme(theme) {
+  document.documentElement.classList.toggle('light', theme === 'light');
+  themeToggle.textContent = theme === 'light' ? '☀️' : '🌙';
+  try { localStorage.setItem('calcTheme', theme); } catch {}
+}
+
+themeToggle.addEventListener('click', () => {
+  const isLight = document.documentElement.classList.contains('light');
+  setTheme(isLight ? 'dark' : 'light');
+});
+
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem('calcTheme') || 'dark'; } catch {}
+setTheme(savedTheme);
 
 document.querySelector('.grid').addEventListener('click', (e) => {
   const btn = e.target.closest('button');
